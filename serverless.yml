@@ -1,4 +1,6 @@
-service: simple-chat
+org: maialenigar
+app: datahack-aws
+service: datahack-aws-project
 
 provider:
   name: aws
