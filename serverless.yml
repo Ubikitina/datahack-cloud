@@ -1,0 +1,116 @@
+org: maialenigar
+app: datahack-aws
+service: datahack-aws-serverless
+
+provider:
+  name: aws
+  runtime: python3.8
+  region: eu-west-1
+  stage: dev
+  environment:
+    DYNAMODB_MESSAGES_TABLE: chat-messages
+    DYNAMODB_PRODUCTS_TABLE: product-info
+  iamRoleStatements:
+        - Effect: "Allow"
+          Action:
+            - dynamodb:Query
+            - dynamodb:PutItem
+            - dynamodb:Scan
+            - dynamodb:DeleteItem
+          Resource:
+            - "arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/${self:provider.environment.DYNAMODB_MESSAGES_TABLE}"
+            - "arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/${self:provider.environment.DYNAMODB_PRODUCTS_TABLE}"
+
+
+functions:
+  sendMessage:
+    handler: handler.send_message
+    events:
+      - http:
+          path: /chat/{chat_id}
+          method: post
+          request:
+            parameters:
+              paths:
+                chat_id: true
+
+  getMessages:
+    handler: handler.get_messages
+    events:
+      - http:
+          path: /chat/{chat_id}
+          method: get
+          request:
+            parameters:
+              paths:
+                chat_id: true
+
+  sendAd:
+    handler: handler.send_ad
+    events:
+      - http:
+          path: /ad/new
+          method: post
+
+  getAds:
+    handler: handler.get_ads
+    events:
+      - http:
+          path: /ad
+          method: get
+  
+  getOneAd:
+    handler: handler.get_ad
+    events:
+      - http:
+          path: /ad/{ad_id}
+          method: get
+          request:
+            parameters:
+              paths:
+                ad_id: true
+  
+  deleteAd:
+    handler: handler.delete_ad
+    events:
+      - http:
+          path: /ad/{ad_id}
+          method: delete
+          request:
+            parameters:
+              paths:
+                ad_id: true
+
+
+resources:
+  Resources:
+    # DynamoDB table definition for chat messages
+    DynamoChatsMessagesTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:provider.environment.DYNAMODB_MESSAGES_TABLE}
+        # Definition of table attributes
+        AttributeDefinitions:
+          - AttributeName: chat_id
+            AttributeType: S # String
+          - AttributeName: ts
+            AttributeType: S
+        # Definition of the primary keys of the table
+        KeySchema:
+          - AttributeName: chat_id
+            KeyType: HASH # HASH indicates the partition key
+          - AttributeName: ts
+            KeyType: RANGE # RANGE indicates the sort key
+        BillingMode: PAY_PER_REQUEST # Billing mode of the table
+
+    DynamoAdsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:provider.environment.DYNAMODB_PRODUCTS_TABLE}
+        AttributeDefinitions:
+          - AttributeName: ad_id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: ad_id
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
