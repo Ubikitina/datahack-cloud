@@ -1,6 +1,6 @@
 # Datahack exercise: AWS Advertisement Website Backend
 
-This repository contains the project for the "Data Architecture and Engineering" master's program, specifically focusing on the Cloud module. The objective of this exercise is to design and implement the backend of an advertisement website using AWS and Serverless.
+The objective of this project is to design and implement the backend of an advertisement website using AWS and Serverless. This project has been developed as part of the Data Architecture and Engineering master's program at Datahack. 
 
 ## Implemented Requirements
 
